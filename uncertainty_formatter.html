@@ -42,6 +42,8 @@
 		color: ボタンの色
 		column: 行を分ける文字列
 		row: 列を分ける文字列
+		pmParting: 最適推定値と不確かさを分ける文字列。空ならば二列に分けて記述されていると判断
+		eParting: 10のn乗を併記する際のnの左に置く文字列を指定。すべて小文字にして処理するので、小文字のみを使うこと。
 		header: 出力の先頭につける文字列
 		footer: 出力の末尾につける文字列
 	コピペ用：
@@ -50,6 +52,8 @@
 			color: "",
 			column: "",
 			row: "",
+			pmParting: "",
+			eParting: "",
 			header:"",
 			footer:""
 		},
@@ -60,6 +64,8 @@
 			color: "skyblue",
 			column: "\\\\\n",
 			row: " & ",
+			pmParting: "+-",
+			eParting: "e",
 			header:"",
 			footer:"",
 		},
@@ -68,6 +74,8 @@
 			color: "orange",
 			column: "; ",
 			row: " ",
+			pmParting: "",
+			eParting: "e",
 			header:" = [",
 			footer:"];",
 		},
@@ -76,6 +84,8 @@
 			color: "mediumseagreen",
 			column: "\n",
 			row: "\t",
+			pmParting: "",
+			eParting: "e",
 			header:"",
 			footer:"",
 		},
@@ -84,6 +94,8 @@
 			color: "violet",
 			column: "\n",
 			row: ".",
+			pmParting: "",
+			eParting: "e",
 			header:"",
 			footer:"",
 		},
