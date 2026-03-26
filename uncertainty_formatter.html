@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@100..900&display=swap" rel="stylesheet">
+    <title>table formatter</title>
+  </head>
+<body>
+    <details id="usage" class="font">
+        <summary>使い方</summary>
+        <ol class="usage-contents">
+            <li>表をテキストボックスに入力してください。</li>
+            <li>次に入力フォーマットのボタンをクリックしてください。</li>
+            <li>クリックすると出力フォーマットのボタンが表示されます。</li>
+            <li>必要なフォーマットをクリックすると表がコピーされるので、好きな場所にペーストしてください。</li>
+        </ol>
+        <p class="usage-contents">※エクセルは範囲選択するとそのままコピーできます。また、ペーストすると選択されたセルが左上になるよう表が貼り付けられます。フォーマットは「tab&enter(Excel)」を使用してください。</p>
+    </details>
+    <textarea name="入力" id="input" class="font"></textarea>
+    <div id="subInput" class="area">
+        <button id="clear" class="mini-button font">clear</button>
+        <p class="tag font">入力時クリア：</p>
+        <input type="checkbox" id="input-clear" class="check">
+    </div>
+    <div class="tab font">入力フォーマット</div>
+    <div id="selectorArea" class="area"></div>
+    <div class="tab font">出力フォーマット</div>
+    <div id="outputs" class="area"></div>
+</body>
+<script>
+    //初期値
+    const INPUT_CLEAR = true;
+    /*
+    テンプレートを追加するには：
+    templates配列にフォーマットを追加します。
+        name: 名称
+        color: ボタンの色
+        column: 行を分ける文字列
+        row: 列を分ける文字列
+        header: 出力の先頭につける文字列
+        footer: 出力の末尾につける文字列
+    コピペ用：
+        {
+            name: "",
+            color: "",
+            column: "",
+            row: "",
+            header:"",
+            footer:""
+        },
+    */
+    const templates = [
+        {
+            name: "latex",
+            color: "skyblue",
+            column: "\\\\\n",
+            row: " & ",
+            header:"",
+            footer:"",
+        },
+        {
+            name: "matlab",
+            color: "orange",
+            column: "; ",
+            row: " ",
+            header:" = [",
+            footer:"];",
+        },
+        {
+            name: "tab&enter(Excel)",
+            color: "mediumseagreen",
+            column: "\n",
+            row: "\t",
+            header:"",
+            footer:"",
+        },
+        {
+            name: "dot&enter",
+            color: "violet",
+            column: "\n",
+            row: ".",
+            header:"",
+            footer:"",
+        },
+    ];
+
+    function spliter(inputArea, template) {
+        let table = [];
+        
+        const rows = inputArea.value.split(template.column);
+
+        for (const row of rows) {
+            const cells = row.split(template.row);
+            table.push(cells);
+        }
+        return table;
+    }
+
+    function generator(table){
+        outputarea = document.getElementById("outputs");
+
+        while(outputarea.firstChild){
+            outputarea.removeChild(outputarea.firstChild);
+        }
+
+        //generate output
+        for (const template of templates) {
+            let outputText = template.header;
+            for (row of table) {
+                for (cell of row) {
+                    outputText += cell;
+                    outputText += template.row;
+                }
+                outputText = outputText.substring(0, outputText.length - template.row.length);
+                outputText += template.column;
+            }
+            outputText = outputText.substring(0, outputText.length - template.column.length);
+            outputText += template.footer;
+
+            let output = document.createElement("button");
+            output.textContent = template.name;
+            output.classList.add("button");
+            output.classList.add("font");
+            output.style.backgroundColor = template.color;
+            output.addEventListener("click", () => {
+                navigator.clipboard.writeText(outputText);
+            });
+            outputarea.appendChild(output);
+        }
+    }
+
+    function selectorSetter(){
+        let selectorArea = document.getElementById("selectorArea");
+        for(const template of templates) {
+            let selector = document.createElement("button");
+            selector.textContent = template.name;
+            selector.classList.add("button");
+            selector.classList.add("font");
+            selector.style.backgroundColor = template.color;
+            selector.addEventListener("click", () => {
+                let inputArea = document.getElementById("input");
+                let output = spliter(inputArea, template);
+                generator(output);
+                
+                if (document.getElementById("input-clear").checked){
+                    let inputArea = document.getElementById("input");
+                    inputArea.value = "";
+                }
+            });
+            selectorArea.appendChild(selector);
+        }
+    }
+    
+    document.getElementById("input-clear").checked = INPUT_CLEAR;
+    selectorSetter();
+    
+    document.getElementById("clear").addEventListener("click", () => {
+        let inputArea = document.getElementById("input");
+        inputArea.value = "";
+    });
+
+</script>
+<style>
+    body{
+        display: flex;
+        flex-direction: column;
+        margin: 10px;
+        padding: 0;
+    }
+    #input{
+        width: auto;
+        height: 8rem;
+        resize: none;
+        border: 1.5px solid gray;
+        border-radius: 0.5rem;
+    }
+    #sub-input{
+        display: flex;
+        flex-direction: row;
+    }
+    .tag{
+        margin: 5px;
+    }
+    .tab{
+        width: max-content;
+        margin-top: 5px;
+        border: 1.5px solid gray;
+        border-radius: 2px 2px 0.5rem;
+        padding: 5px 12px;
+        background-color: #ccc;
+        font-size: 1.2rem;
+    }
+    .area{
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        padding-left: 15px;
+    }
+    .button{
+        margin: 5px;
+        border: 1.5px solid gray;
+        border-radius: 0.5rem;
+        padding: 5px 12px;
+        font-size: 1.2rem;
+    }
+    .mini-button{
+        margin: 5px;
+        border: 1.5px solid gray;
+        border-radius: 0.5rem;
+        padding: 2.5px 6px;
+        font-size: 1rem;
+    }
+    .check{
+        width: 1.2rem;
+        height: 1.2rem;
+    }
+    #usage{
+        margin-bottom: 10px;
+        border: 1.5px solid gray;
+        border-radius: 2px 2px 0.5rem;
+        padding: 2px 7px;
+    }
+    .usage-contents{
+        margin: 12px;
+        margin-bottom: 7px;
+    }
+    .font{
+    font-family: "Noto Sans JP", sans-serif;
+    font-optical-sizing: auto;
+    font-weight: 500;
+    font-style: normal;
+    }
+</style>
+</html>
+
