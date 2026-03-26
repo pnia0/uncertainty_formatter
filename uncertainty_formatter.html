@@ -101,6 +101,19 @@
 		},
 	];
 
+	function eExpander(value, offset, parting) {
+		let separated = value.split(parting);
+		if (separated.length == 1) {
+			separated.push(0);
+		}
+		separated[1] = Number(separated[1]) + offset;
+		return separated
+	}
+
+	function eCompressor(significand, exponent, parting) {
+		return `${significand}${parting}${exponent}`
+	}
+
 	function spliter(inputArea, template) {
 		let table = [];
 		
