@@ -114,13 +114,41 @@
 		return `${significand}${parting}${exponent}`
 	}
 
-	function shiftDecimalPoint(significand, exponent, targetIntegerDigit) {
+	function setDecimalPointZero(significand, exponent) {
 		let separated = significand.split(".");
+		if (separated[0] == "0") {
+			let normalizedExponent = exponent;
+			while ((separated[1] ?? "1").substring(0, 1) == "0") {
+				separated[1] = separated[1].substring(1);
+				normalizedExponent -= 1;
+			}
+			if (!separated[1]) {
+				return [0, 0]
+			}
+			return [`0.${separated[1]}`, normalizedExponent]
+		}
+		
+		let connected = `0.${separated[0]}${separated[1] ?? ""}`;
+		return [connected, exponent + separated[0].length]
+	}
 
-		let newExponent = exponent - targetIntegerDigit + separated[0].length;
+	function setExponent(significand, exponent, targetExponent) {
+		let [normalizedSignificand, normalizedExponent] = setDecimalPointZero(significand, exponent);
+
+		return shiftDecimalPoint(normalizedSignificand, normalizedExponent, normalizedExponent - targetExponent)
+	}
+
+	function shiftDecimalPoint(significand, exponent, targetIntegerDigit) {
+		let [normalizedSignificand, normalizedExponent] = setDecimalPointZero(significand, exponent);
+		if (normalizedSignificand == "0") {
+			return ["0", 0]
+		}
+
+		let [_, connected] = normalizedSignificand.split(".");
+
+		let newExponent = normalizedExponent - targetIntegerDigit;
 
 		let newSignificand = "";
-		connected = `${separated[0]}${separated[1] ?? ""}`;
 		if (targetIntegerDigit < 0) {
 			newSignificand = `0.${"0".repeat(targetIntegerDigit * -1)}${connected}`;
 			return [newSignificand, newExponent]
