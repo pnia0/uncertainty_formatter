@@ -114,6 +114,28 @@
 		return `${significand}${parting}${exponent}`
 	}
 
+	function shiftDecimalPoint(significand, exponent, targetIntegerDigit) {
+		let separated = significand.split(".");
+
+		let newExponent = exponent - targetIntegerDigit + separated[0].length;
+
+		let newSignificand = "";
+		connected = `${separated[0]}${separated[1] ?? ""}`;
+		if (targetIntegerDigit < 0) {
+			newSignificand = `0.${"0".repeat(targetIntegerDigit * -1)}${connected}`;
+			return [newSignificand, newExponent]
+		}
+		newSignificand = `${connected.substring(0, targetIntegerDigit) || "0"}`;
+		let tailZeroCount = targetIntegerDigit - connected.length;
+		if (tailZeroCount < 0) {
+			newSignificand += `.${connected.substring(targetIntegerDigit)}`;
+		} else {
+			newSignificand += "0".repeat(tailZeroCount);
+		}
+
+		return [newSignificand, newExponent]
+	}
+
 	function spliter(inputArea, template) {
 		let table = [];
 		
