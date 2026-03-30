@@ -176,6 +176,29 @@
 		return table;
 	}
 
+	function scientificNotationExpander(rawArray, notationOffset, template) {
+		let processedArray = rawArray.slice(0, notationOffset - 1);
+		if (template.pmParting == "") {
+			processedArray.push(...eExpander(rawArray[notationOffset - 1], 0, template.eParting));
+			processedArray.push(...eExpander(rawArray[notationOffset], 0, template.eParting));
+			processedArray.push(...rawArray.slice(notationOffset + 1));
+			return processedArray
+		}
+
+		let parts = rawArray[notationOffset - 1].split(template.pmParting);
+		if (parts[1]) {
+			let exponent = eExpander(parts[1], 0, template.eParting);
+			processedArray.push(parts[0], exponent[1], ...exponent);
+			processedArray.push(...rawArray.slice(notationOffset));
+			return processedArray
+		}
+
+		let significand = eExpander(parts[0], 0, template.eParting);
+		processedArray.push(...significand, 0, 0);
+		processedArray.push(...rawArray.slice(notationOffset));
+		return processedArray
+	}
+
 	function generator(table){
 		outputarea = document.getElementById("outputs");
 
