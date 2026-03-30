@@ -195,6 +195,26 @@
 		return processedArray
 	}
 
+	function scientificNotationCompressor(rawArray, notationOffset, template) {
+		let processedArray = rawArray.slice(0, notationOffset - 1);
+
+		let estimate = shiftDecimalPoint(rawArray[notationOffset - 1], rawArray[notationOffset], 1);
+		let uncertainty = setExponent(rawArray[Number(notationOffset) + 1], rawArray[Number(notationOffset) + 2], estimate[1]);
+
+		//ここで必要に応じて四捨五入の処理
+
+		if (template.pmParting == "") {
+			processedArray.push(`${estimate[0]}${template.eParting}${estimate[1]}`);
+			processedArray.push(`${uncertainty[0]}${template.eParting}${uncertainty[1]}`);
+		} else {
+			let notation = `${estimate[0]}${template.pmParting}${uncertainty[0]}${template.eParting}${estimate[1]}`;
+			processedArray.push(notation);
+		}
+
+		processedArray.push(...rawArray.slice(Number(notationOffset) + 3));
+		return processedArray
+	}
+
 	function generator(table){
 		outputarea = document.getElementById("outputs");
 
