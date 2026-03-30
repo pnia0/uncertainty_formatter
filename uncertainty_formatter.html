@@ -110,10 +110,6 @@
 		return separated
 	}
 
-	function eCompressor(significand, exponent, parting) {
-		return `${significand}${parting}${exponent}`
-	}
-
 	function setDecimalPointZero(significand, exponent) {
 		let separated = significand.split(".");
 		if (separated[0] == "0") {
