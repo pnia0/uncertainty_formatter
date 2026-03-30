@@ -258,9 +258,22 @@
 			selector.style.backgroundColor = template.color;
 			selector.addEventListener("click", () => {
 				let inputArea = document.getElementById("input");
-				let output = spliter(inputArea, template);
-				generator(output);
-				
+				let estimateColumnOffset = document.getElementById("estimate-colmun-offset").value;
+				if (estimateColumnOffset < 1) {
+					estimateColumnOffset = 1;
+				}
+
+				let rawMatrix = spliter(inputArea, template);
+				let processedMatrix = [];
+				for (rawArray of rawMatrix) {
+					console.log(rawArray);
+					let expanded = scientificNotationExpander(rawArray, estimateColumnOffset, template);
+					console.log(expanded)
+					let compressed = scientificNotationCompressor(expanded, estimateColumnOffset, template);
+					processedMatrix.push(compressed);
+				}
+				generator(processedMatrix);
+
 				if (document.getElementById("input-clear").checked){
 					let inputArea = document.getElementById("input");
 					inputArea.value = "";
