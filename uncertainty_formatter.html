@@ -177,7 +177,7 @@
 		if (template.pmParting == "") {
 			processedArray.push(...eExpander(rawArray[notationOffset - 1], 0, template.eParting));
 			processedArray.push(...eExpander(rawArray[notationOffset], 0, template.eParting));
-			processedArray.push(...rawArray.slice(notationOffset + 1));
+			processedArray.push(...rawArray.slice(Number(notationOffset) + 1));
 			return processedArray
 		}
 
