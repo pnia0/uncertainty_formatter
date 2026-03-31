@@ -266,9 +266,7 @@
 				let rawMatrix = spliter(inputArea, template);
 				let processedMatrix = [];
 				for (rawArray of rawMatrix) {
-					console.log(rawArray);
 					let expanded = scientificNotationExpander(rawArray, estimateColumnOffset, template);
-					console.log(expanded)
 					let compressed = scientificNotationCompressor(expanded, estimateColumnOffset, template);
 					processedMatrix.push(compressed);
 				}
