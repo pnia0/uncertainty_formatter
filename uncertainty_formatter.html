@@ -44,6 +44,7 @@
 		row: 列を分ける文字列
 		pmParting: 最適推定値と不確かさを分ける文字列。空ならば二列に分けて記述されていると判断
 		eParting: 10のn乗を併記する際のnの左に置く文字列を指定。大文字小文字を区別する
+		cutoff: 不確かさに合わせて不必要な桁を四捨五入するか指定。true or false
 		header: 出力の先頭につける文字列
 		footer: 出力の末尾につける文字列
 	コピペ用：
@@ -54,6 +55,7 @@
 			row: "",
 			pmParting: "",
 			eParting: "",
+			cutoff: ,
 			header:"",
 			footer:""
 		},
@@ -66,6 +68,7 @@
 			row: " & ",
 			pmParting: "+-",
 			eParting: "e",
+			cutoff: true,
 			header:"",
 			footer:"",
 		},
@@ -76,6 +79,7 @@
 			row: " ",
 			pmParting: "",
 			eParting: "e",
+			cutoff: false,
 			header:" = [",
 			footer:"];",
 		},
@@ -86,6 +90,7 @@
 			row: "\t",
 			pmParting: "",
 			eParting: "E",
+			cutoff: false,
 			header:"",
 			footer:"",
 		},
@@ -96,6 +101,7 @@
 			row: ".",
 			pmParting: "",
 			eParting: "*",
+			cutoff: false,
 			header:"",
 			footer:"",
 		},
@@ -195,12 +201,19 @@
 		return processedArray
 	}
 
+	function roundDependOnUncertainty(estimate, uncertainty) {
+		return [estimate, uncertainty]
+	}
+
 	function scientificNotationCompressor(rawArray, notationOffset, template) {
 		let processedArray = rawArray.slice(0, notationOffset - 1);
 
 		let estimate = shiftDecimalPoint(rawArray[notationOffset - 1], rawArray[notationOffset], 1);
 		let uncertainty = setExponent(rawArray[Number(notationOffset) + 1], rawArray[Number(notationOffset) + 2], estimate[1]);
 
+		if (template.cutoff) {
+			[estimate[0], uncertainty[0]] = roundDependOnUncertainty(estimate[0], uncertainty[0]);
+		}
 		//ここで必要に応じて四捨五入の処理
 
 		if (template.pmParting == "") {
