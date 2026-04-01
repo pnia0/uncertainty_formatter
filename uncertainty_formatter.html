@@ -201,20 +201,108 @@
 		return processedArray
 	}
 
+	function judgeRoundDigit(value) {
+		let roundDigit = 0;
+		let separated = value.split(".");
+		if (separated[0] != "0" || !separated[1]) {
+			return separated[0].length -1
+		}
+		while (separated[1][0] == "0") {
+			roundDigit--;
+			separated[1] = separated[1].slice(1);
+			if (separated[1] == "") {
+				return
+			}
+		}
+		roundDigit--;
+		return roundDigit
+	}
+
+	function pickByDigit(integer, decimal, digit) {
+		if (digit < 0) {
+			return decimal[digit * -1 - 1] ?? 0
+		}
+		return integer[integer.length - 1 - digit] ?? 0
+	}
+
+	function cutoffByDigit(integer, decimal, digit) {
+		if (digit < 0) {
+			let zeroShortage = decimal.length * -1 - digit;
+			while (zeroShortage > 0) {
+				zeroShortage--;
+				decimal += "0";
+			}
+			return `${integer}.${decimal.slice(0, digit * -1)}`
+		}
+
+		if (digit > integer.length) {
+			return `${"0".repeat(digit)}`
+		}
+
+		return `${integer.slice(0, integer.length - digit)}${"0".repeat(digit)}`
+	}
+
+	function roundByDigit(value, digit) {
+		let separated = value.split(".");
+		if (separated[1] == null) {
+			separated[1] = "";
+		}
+
+		if (Number(pickByDigit(separated[0], separated[1], digit - 1)) < 5) {
+			return cutoffByDigit(separated[0], separated[1], digit)
+		}
+
+		if (digit < 0) {
+			let headZero = 0;
+			while ((separated[1][0] ?? "") == "0") {
+				headZero++;
+				separated[1] = separated[1].slice(1);
+			}
+
+			let addedDecimal = `${Number(separated[1]) + 10**(separated[1].length + headZero + digit)}`
+			if (addedDecimal.length > separated[1].length) {
+				if (headZero > 0) {
+					return cutoffByDigit(separated[0], `${"0".repeat(headZero - 1)}${addedDecimal}`, digit)
+				}
+				separated[0] = `${Number(separated[0]) + 1}`
+				addedDecimal = addedDecimal.slice(1)
+			}
+			return cutoffByDigit(separated[0], `${"0".repeat(headZero)}${addedDecimal}`, digit)
+		}
+
+		separated[0] = `${Number(separated[0]) + 10**digit}`
+		return cutoffByDigit(separated[0], separated[1], digit)
+	}
+
 	function roundDependOnUncertainty(estimate, uncertainty) {
-		return [estimate, uncertainty]
+		let roundDigit = judgeRoundDigit(uncertainty);
+		if (!roundDigit) {
+			return estimate
+		}
+		return roundByDigit(estimate, roundDigit)
 	}
 
 	function scientificNotationCompressor(rawArray, notationOffset, template) {
 		let processedArray = rawArray.slice(0, notationOffset - 1);
 
+		let roundedUncertainty = rawArray[Number(notationOffset) + 1];
+		if (template.cutoff) {
+			let preRoundDigit = judgeRoundDigit(roundedUncertainty);
+			if (preRoundDigit) {
+				roundedUncertainty = roundByDigit(roundedUncertainty, preRoundDigit);
+			}
+		}
+
 		let estimate = shiftDecimalPoint(rawArray[notationOffset - 1], rawArray[notationOffset], 1);
-		let uncertainty = setExponent(rawArray[Number(notationOffset) + 1], rawArray[Number(notationOffset) + 2], estimate[1]);
+		let uncertainty = setExponent(roundedUncertainty, rawArray[Number(notationOffset) + 2], estimate[1]);
 
 		if (template.cutoff) {
-			[estimate[0], uncertainty[0]] = roundDependOnUncertainty(estimate[0], uncertainty[0]);
+			let roundDigit = judgeRoundDigit(uncertainty[0]);
+			if (roundDigit) {
+				uncertainty[0] = roundByDigit(uncertainty[0], roundDigit);
+				estimate[0] = roundByDigit(estimate[0], roundDigit);
+			}
 		}
-		//ここで必要に応じて四捨五入の処理
 
 		if (template.pmParting == "") {
 			processedArray.push(`${estimate[0]}${template.eParting}${estimate[1]}`);
@@ -228,7 +316,7 @@
 		return processedArray
 	}
 
-	function generator(table){
+	function generator(rawMatrix, estimateColumnOffset){
 		outputarea = document.getElementById("outputs");
 
 		while(outputarea.firstChild){
@@ -238,8 +326,9 @@
 		//generate output
 		for (const template of templates) {
 			let outputText = template.header;
-			for (row of table) {
-				for (cell of row) {
+			for (rawArray of rawMatrix) {
+				let compressed = scientificNotationCompressor(rawArray, estimateColumnOffset, template);
+				for (cell of compressed) {
 					outputText += cell;
 					outputText += template.row;
 				}
@@ -280,10 +369,9 @@
 				let processedMatrix = [];
 				for (rawArray of rawMatrix) {
 					let expanded = scientificNotationExpander(rawArray, estimateColumnOffset, template);
-					let compressed = scientificNotationCompressor(expanded, estimateColumnOffset, template);
-					processedMatrix.push(compressed);
+					processedMatrix.push(expanded);
 				}
-				generator(processedMatrix);
+				generator(processedMatrix, estimateColumnOffset);
 
 				if (document.getElementById("input-clear").checked){
 					let inputArea = document.getElementById("input");
