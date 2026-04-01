@@ -116,6 +116,14 @@
 		return separated
 	}
 
+	function eCompressor(significand, exponent, parting) {
+		console.log(exponent)
+		if (exponent == 0) {
+			return significand
+		}
+		return `${significand}${parting}${exponent}`
+	}
+
 	function setDecimalPointZero(significand, exponent) {
 		let separated = significand.split(".");
 		if (separated[0] == "0") {
@@ -305,10 +313,10 @@
 		}
 
 		if (template.pmParting == "") {
-			processedArray.push(`${estimate[0]}${template.eParting}${estimate[1]}`);
-			processedArray.push(`${uncertainty[0]}${template.eParting}${uncertainty[1]}`);
+			processedArray.push(eCompressor(estimate[0], estimate[1], template.eParting));
+			processedArray.push(eCompressor(uncertainty[0], uncertainty[1], template.eParting));
 		} else {
-			let notation = `${estimate[0]}${template.pmParting}${uncertainty[0]}${template.eParting}${estimate[1]}`;
+			let notation = eCompressor(`${estimate[0]}${template.pmParting}${uncertainty[0]}`, estimate[1], template.eParting);
 			processedArray.push(notation);
 		}
 
